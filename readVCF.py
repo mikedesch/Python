@@ -4,8 +4,8 @@ import vcfpy
 reader = vcfpy.Reader.from_path('variants.vcf')
 
 # Build and print header
-header = reader.header.samples.names
-print('\t'.join(header))
+# header = reader.header.samples.names
+# print('\t'.join(header))
 
 for record in reader:
     if not record.is_snv():
