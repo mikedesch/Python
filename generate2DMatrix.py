@@ -1,6 +1,41 @@
 import timeit
-
+import pandas as pd
 import numpy as np
+import csv
+import vcfpy
+
+
+
+
+def parseVCF():
+
+    # Open file, this will read in the header
+    reader = vcfpy.Reader.from_path('variants.vcf')
+
+    file1 = open("parsedGT.txt","a+")
+
+    # Build and print header
+    # header = reader.header.samples.names
+    # print('\t'.join(header))
+    for record in reader:
+        if not record.is_snv():
+            continue
+        line = [call.data.get('GT') or './.' for call in record.calls]
+ 
+        file1.write('\t'.join(map(str, line)) + "\n")
+
+
+parseVCF()
+
+
+
+
+
+
+
+
+
+
 
 ## File Description:
 ##
@@ -45,14 +80,16 @@ def createArray(rawData):
 
 
 
-zygosityMatrix = createArray("./parsedGT_4.txt")
+zygosityMatrix = createArray("./parsedGT.txt")
 
 
-
+print("output the dim of zygosityMatrix")
+print(np.shape(zygosityMatrix))
 
 
 def zygosityCountsPerSample(GTMatrix):
 
+    dim = np.shape(GTMatrix)
     GTResultsMatrixPerSample = np.empty([100,4])
 
     # writing #rows to var
@@ -78,17 +115,22 @@ def zygosityCountsPerSample(GTMatrix):
             if GTMatrix[r][c] == "0/1":
                 numberGTHeterozygous += 1
 
-    GTResultsMatrixPerSample[c,0] = numberGTNotAvailable
-    GTResultsMatrixPerSample[c,1] = numberGTHomozygousRef
-    GTResultsMatrixPerSample[c,2] = numberGTHomozygousAlt
-    GTResultsMatrixPerSample[c,3] = numberGTHeterozygous
-    
-    return GTResultsMatrixPerSample
+        GTResultsMatrixPerSample[c,0] = numberGTNotAvailable
+        GTResultsMatrixPerSample[c,1] = numberGTHomozygousRef
+        GTResultsMatrixPerSample[c,2] = numberGTHomozygousAlt
+        GTResultsMatrixPerSample[c,3] = numberGTHeterozygous
 
+    with open("GTResultsMatrixPerSample_PYTHON.csv","w+") as my_csv:
+        newarray = csv.writer(my_csv,delimiter=',')
+        newarray.writerows(GTResultsMatrixPerSample)
 
+##    dataframe = pd.DataFrame(GTResultsMatrixPerSample)
+
+##    print(dataframe)
+
+##    dataframe.to_csv(r("./GTResultsMatrixPerSample.csv"))
 
 zygosityCountsPerSample(zygosityMatrix)
-
 
 #for i in range(0,4):
    # print(GTResultsMatrixPerSample[0,i])
