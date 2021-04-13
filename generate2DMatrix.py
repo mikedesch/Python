@@ -1,8 +1,15 @@
 import timeit
 
+import numpy as np
 
+## File Description:
+##
+##	creating a 2-D array out of the parsed output from (vcfpy) readVCF.py
+##
+##
 
-def fixText(text):
+## tokenizing each row on "\t" character
+def extractGT(text):
     row = []
     z = text.find("\t")
     if z == 0:  row.append('')
@@ -19,10 +26,11 @@ def fixText(text):
                 row.append(c)
     return row
 
-def createTuple(oldFile):
-    ## oldFile is filename (e.g. 'sheet.csv')
-    f1 = open(oldFile, "r")
-    tup = []
+## using the above tokenizing function to iterate on all rows from the input file
+## -> this appends the individual tokenized elements to a 2-D array
+def createArray(rawData):
+    f1 = open(rawData, "r")
+    arr = []
     while 1:
         text = f1.readline()
         if text == "":  break
@@ -30,60 +38,60 @@ def createTuple(oldFile):
         if text[-1] == '\n':
             text = text[:-1]
         else:   pass
-        row = fixText(text)
-        tup.append(row)
-    return tup
+        row = extractGT(text)
+        arr.append(row)
+    return arr
 
 
 
 
-matrix = createTuple("./parsedGT_4.txt")
+zygosityMatrix = createArray("./parsedGT_4.txt")
 
-# print(matrix)
 
-import numpy as np
 
-dim = np.shape(matrix)
 
-# writing #rows to var
-rows = dim[0]
 
-# writing #cols to var
-cols = dim[1]
+def zygosityCountsPerSample(GTMatrix):
 
-print(rows, cols)
+    GTResultsMatrixPerSample = np.empty([100,4])
 
-GTResultsMatrixPerSample = np.empty([100,4])
+    # writing #rows to var
+    rows = dim[0]
 
-print(" dim of GTResultsMatrixPerSample is ")
-print(np.shape(GTResultsMatrixPerSample))
+    # writing #cols to var
+    cols = dim[1]
 
-for c in range (0, cols):
+    for c in range (0, cols):
 
-    numberGTNotAvailable = 0
-    numberGTHomozygousRef = 0
-    numberGTHomozygousAlt = 0
-    numberGTHeterozygous = 0
+        numberGTNotAvailable = 0
+        numberGTHomozygousRef = 0
+        numberGTHomozygousAlt = 0
+        numberGTHeterozygous = 0
     
-    for r in range (0, rows):
-        if matrix[r][c] == "./.":
-            numberGTNotAvailable += 1
-        if matrix[r][c] == "0/0":
-            numberGTHomozygousRef += 1
-        if matrix[r][c] == "1/1":
-            numberGTHomozygousAlt += 1
-        if matrix[r][c] == "0/1":
-            numberGTHeterozygous += 1
+        for r in range (0, rows):
+            if GTMatrix[r][c] == "./.":
+                numberGTNotAvailable += 1
+            if GTMatrix[r][c] == "0/0":
+                numberGTHomozygousRef += 1
+            if GTMatrix[r][c] == "1/1":
+                numberGTHomozygousAlt += 1
+            if GTMatrix[r][c] == "0/1":
+                numberGTHeterozygous += 1
 
     GTResultsMatrixPerSample[c,0] = numberGTNotAvailable
     GTResultsMatrixPerSample[c,1] = numberGTHomozygousRef
     GTResultsMatrixPerSample[c,2] = numberGTHomozygousAlt
     GTResultsMatrixPerSample[c,3] = numberGTHeterozygous
     
+    return GTResultsMatrixPerSample
 
 
-for i in range(0,4):
-    print(GTResultsMatrixPerSample[0,i])
+
+zygosityCountsPerSample(zygosityMatrix)
+
+
+#for i in range(0,4):
+   # print(GTResultsMatrixPerSample[0,i])
 
 
 
